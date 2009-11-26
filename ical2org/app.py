@@ -56,6 +56,12 @@ def main(args=sys.argv[1:]):
                              default=True,
                              help='Include all calendars, not just active.',
                              )
+    option_parser.add_option('--input-directory',
+                             action='store',
+                             dest='input_directory',
+                             default=os.path.expanduser('~/Library/Calendars'),
+                             help='Directory containing calendars. Defaults to ~/Library/Calendars.',
+                             )
                              
     options, calendar_titles = option_parser.parse_args(args)
 
@@ -68,17 +74,17 @@ def main(args=sys.argv[1:]):
     if options.output_file_name:
         logging.info('Writing to %s', options.output_file_name)
 
-    calendar_dirname = os.path.expanduser('~/Library/Calendars')
     if calendar_titles:
-        calendar_generator = calendars.get_by_titles(path=calendar_dirname,
+        calendar_generator = calendars.get_by_titles(path=options.input_directory,
                                                      titles=calendar_titles)
     else:
-        calendar_generator = calendars.discover(path=calendar_dirname,
+        calendar_generator = calendars.discover(path=options.input_directory,
                                                 active_only=options.active_only)
 
     for calendar in calendar_generator:
         logging.info('Processing: %s', calendar.title)
-
+        for event in calendar.get_events():
+            logging.info('  %s', event.summary.value)
     return
     
     

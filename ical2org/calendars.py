@@ -11,6 +11,8 @@ import logging
 import os
 import plistlib
 
+import vobject
+
 log = logging.getLogger(__name__)
 
 
@@ -73,4 +75,15 @@ class Calendar(object):
         self.title = self.info.get('Title')
         self.active = self.info.get('Checked')
         log.debug('Calendar "%s" (active=%s)', self.title, self.active)
+        return
+
+    def get_events(self):
+        """Generator that yields all events in the calendar.
+        """
+        ics_filenames = glob(os.path.join(self.path, 'Events', '*.ics'))
+        for ics_filename in ics_filenames:
+            with open(ics_filename, 'rt') as ics_file:
+                for component in vobject.readComponents(ics_file):
+                    for event in component.vevent_list:
+                        yield event
         return
