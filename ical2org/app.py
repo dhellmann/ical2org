@@ -7,6 +7,7 @@
 
 import logging
 import optparse
+import os
 import sys
 
 from ical2org import calendars
@@ -19,7 +20,7 @@ VERBOSE_LEVELS = {
 
 def main(args=sys.argv[1:]):
     option_parser = optparse.OptionParser(
-        usage='usage: ical2org [options] [calendar names]',
+        usage='usage: ical2org [options] [calendar titles]',
         conflict_handler='resolve',
         description='Convert iCal calendar entries to org-mode data for use with emacs',
         )
@@ -56,7 +57,7 @@ def main(args=sys.argv[1:]):
                              help='Include all calendars, not just active.',
                              )
                              
-    options, calendar_names = option_parser.parse_args(args)
+    options, calendar_titles = option_parser.parse_args(args)
 
     logging.basicConfig(level=VERBOSE_LEVELS.get(options.verbose_level, logging.WARNING),
                         format='%(message)s',
@@ -68,12 +69,16 @@ def main(args=sys.argv[1:]):
         logging.info('Writing to %s', options.output_file_name)
 
     calendar_dirname = os.path.expanduser('~/Library/Calendars')
-    if calendar_names:
-        calendar_generator = calendars.get_by_names(path=calendar_dirname,
-                                                    names=calendar_names)
+    if calendar_titles:
+        calendar_generator = calendars.get_by_titles(path=calendar_dirname,
+                                                     titles=calendar_titles)
     else:
         calendar_generator = calendars.discover(path=calendar_dirname,
                                                 active_only=options.active_only)
+
+    for calendar in calendar_generator:
+        logging.info('Processing: %s', calendar.title)
+
     return
     
     
