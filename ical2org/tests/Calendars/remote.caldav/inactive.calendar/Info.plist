@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AlarmsDisabled</key>
+	<false/>
+	<key>Checked</key>
+	<integer>0</integer>
+	<key>Color</key>
+	<string>#E51717FF</string>
+	<key>Editable</key>
+	<true/>
+	<key>Enabled</key>
+	<true/>
+	<key>Key</key>
+	<string>27FAFCCB-0A7A-4995-9EDC-F3205D9D7A57</string>
+	<key>Order</key>
+	<integer>27</integer>
+	<key>Title</key>
+	<string>remote ical2org inactive</string>
+	<key>Type</key>
+	<string>Local</string>
+</dict>
+</plist>
