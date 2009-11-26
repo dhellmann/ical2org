@@ -46,7 +46,6 @@ def test_format_time_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = utc)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = utc)
-    print end.value
     text = format_for_diary(e)
     assert text == '11/26/09 09:05-13:25 This is a note', text
     return
@@ -60,7 +59,6 @@ def test_format_date_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = utc)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = utc)
-    print end.value
     text = format_for_diary(e)
     assert text == '%%(diary-block 11 26 2009 12 26 2009) This is a note', text
     return
