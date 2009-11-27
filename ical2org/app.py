@@ -5,12 +5,13 @@
 """Command line interface for ical2org.
 """
 
+import datetime
 import logging
 import optparse
 import os
 import sys
 
-from ical2org import calendars
+from ical2org import calendars, filter, diary
 
 VERBOSE_LEVELS = {
     0:logging.WARNING,
@@ -65,11 +66,19 @@ def main(args=sys.argv[1:]):
                              
     options, calendar_titles = option_parser.parse_args(args)
 
-    logging.basicConfig(level=VERBOSE_LEVELS.get(options.verbose_level, logging.WARNING),
-                        format='%(message)s',
-                        )
-    logging.info('Starting %d days ago', options.days_ago)
-    logging.info('Ending %d days from now', options.days_ahead)
+    log_level = VERBOSE_LEVELS.get(options.verbose_level, logging.DEBUG)
+    logging.basicConfig(level=log_level, format='%(message)s')
+
+    start_date = datetime.datetime.combine(
+        datetime.date.today() - datetime.timedelta(options.days_ago),
+        datetime.time.min,
+        )
+    end_date = datetime.datetime.combine(
+        datetime.date.today() + datetime.timedelta(options.days_ahead),
+        datetime.time.max,
+        )
+    logging.info('Starting %d days ago at %s', options.days_ago, start_date)
+    logging.info('Ending %d days from now at %s', options.days_ahead, end_date)
 
     if options.output_file_name:
         logging.info('Writing to %s', options.output_file_name)
@@ -83,8 +92,12 @@ def main(args=sys.argv[1:]):
 
     for calendar in calendar_generator:
         logging.info('Processing: %s', calendar.title)
-        for event in calendar.get_events():
+        for event in filter.by_date_range(calendar.get_events(),
+                                          start_date,
+                                          end_date,
+                                          ):
             logging.info('  %s', event.summary.value)
+            print diary.format_for_diary(event, calendar.title)
     return
     
     
