@@ -6,6 +6,7 @@
 """Utilities for working with calendar files
 """
 
+import datetime
 from glob import glob
 import logging
 import os
@@ -14,6 +15,7 @@ import plistlib
 import vobject
 
 log = logging.getLogger(__name__)
+utc = vobject.icalendar.utc
 
 
 def _get_candidate_directories(path):
@@ -85,5 +87,7 @@ class Calendar(object):
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
                     for event in component.vevent_list:
+                        event.dtstart.value = event.dtstart.value.replace(tzinfo=utc)
+                        event.dtend.value = event.dtend.value.replace(tzinfo=utc)
                         yield event
         return

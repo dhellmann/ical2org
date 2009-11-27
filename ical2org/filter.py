@@ -19,6 +19,28 @@ def by_date_range(events, start, end):
     """
     log.debug('filtering between %s and %s', start, end)
     for event in events:
+
+        # Fix time zones in date objects
+        if not isinstance(event.dtstart.value, datetime.datetime):
+            event_start = datetime.datetime.combine(event.dtstart.value,
+                                                    datetime.time.min,
+                                                    )
+            event_end = datetime.datetime.combine(event.dtend.value,
+                                                  datetime.time.max,
+                                                  )
+        else:
+            event_start = event.dtstart.value
+            event_end = event.dtend.value
+
+        if not event_start.tzinfo:
+            event_start = event_start.replace(tzinfo=utc)
+        if not event_end.tzinfo:
+            event_end = event_end.replace(tzinfo=utc)
+
+        # Replace the dates in case we updated the timezone
+        event.dtstart.value = event_start
+        event.dtend.value = event_end
+        
         event_rrule = getattr(event, 'rrule', None)
         log.debug('checking %s - %s == %s', 
                   event.dtstart.value, event.dtend.value,
@@ -30,23 +52,10 @@ def by_date_range(events, start, end):
             for recurrance in event.rruleset.between(start, end, inc=True):
                 log.debug('  recurrance %s %s', recurrance, type(recurrance))
                 dupe = event.__class__.duplicate(event)
-                dupe.dtstart.value = recurrance
-                dupe.dtend.value = recurrance + duration
+                dupe.dtstart.value = recurrance.replace(tzinfo=utc)
+                dupe.dtend.value = (recurrance + duration).replace(tzinfo=utc)
                 yield dupe
-        else:
-            if not isinstance(event.dtstart.value, datetime.datetime):
-                event_start = datetime.datetime.combine(event.dtstart.value,
-                                                        datetime.time.min,
-                                                        tzinfo=utc)
-                event_end = datetime.datetime.combine(event.dtend.value,
-                                                      datetime.time.max,
-                                                      tzinfo=utc)
-            else:
-                event_start = event.dtstart.value
-                event_end = event.dtend.value
-            log.debug('event_start = %s', event_start)
-            log.debug('event_end = %s', event_end)
-            if event_start >= start and event_end <= end:
-                yield event
+        elif event_start >= start and event_end <= end:
+            yield event
 
     

@@ -12,6 +12,9 @@ import os
 import sys
 
 from ical2org import calendars, filter, diary
+import vobject
+
+utc = vobject.icalendar.utc
 
 VERBOSE_LEVELS = {
     0:logging.WARNING,
@@ -72,11 +75,11 @@ def main(args=sys.argv[1:]):
     start_date = datetime.datetime.combine(
         datetime.date.today() - datetime.timedelta(options.days_ago),
         datetime.time.min,
-        )
+        ).replace(tzinfo=utc)
     end_date = datetime.datetime.combine(
         datetime.date.today() + datetime.timedelta(options.days_ahead),
         datetime.time.max,
-        )
+        ).replace(tzinfo=utc)
     logging.info('Starting %d days ago at %s', options.days_ago, start_date)
     logging.info('Ending %d days from now at %s', options.days_ahead, end_date)
 
