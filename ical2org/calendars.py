@@ -87,7 +87,5 @@ class Calendar(object):
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
                     for event in component.vevent_list:
-                        event.dtstart.value = event.dtstart.value.replace(tzinfo=utc)
-                        event.dtend.value = event.dtend.value.replace(tzinfo=utc)
                         yield event
         return
