@@ -46,16 +46,20 @@ def by_date_range(events, start, end):
                   event.dtstart.value, event.dtend.value,
                   event.summary.value,
                   )
-        if event_rrule is not None:
-            duration = event.dtend.value - event.dtstart.value
-            log.debug('  duration %s', duration)
-            for recurrance in event.rruleset.between(start, end, inc=True):
-                log.debug('  recurrance %s %s', recurrance, type(recurrance))
-                dupe = event.__class__.duplicate(event)
-                dupe.dtstart.value = recurrance.replace(tzinfo=utc)
-                dupe.dtend.value = (recurrance + duration).replace(tzinfo=utc)
-                yield dupe
-        elif event_start >= start and event_end <= end:
-            yield event
-
+        try:
+            if event_rrule is not None:
+                duration = event.dtend.value - event.dtstart.value
+                log.debug('  duration %s', duration)
+                for recurrance in event.rruleset.between(start, end, inc=True):
+                    log.debug('  recurrance %s %s', recurrance, type(recurrance))
+                    dupe = event.__class__.duplicate(event)
+                    dupe.dtstart.value = recurrance.replace(tzinfo=utc)
+                    dupe.dtend.value = (recurrance + duration).replace(tzinfo=utc)
+                    yield dupe
+            elif event_start >= start and event_end <= end:
+                yield event
+        except TypeError:
+            event.prettyPrint()
+            raise
+        
     

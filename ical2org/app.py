@@ -100,7 +100,7 @@ def main(args=sys.argv[1:]):
                                           end_date,
                                           ):
             logging.info('  %s', event.summary.value)
-            print diary.format_for_diary(event, calendar.title)
+            #print diary.format_for_diary(event, calendar.title)
     return
     
     
