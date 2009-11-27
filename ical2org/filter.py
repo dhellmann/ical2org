@@ -8,6 +8,7 @@
 
 import datetime
 import logging
+import sys
 
 import vobject
 
@@ -32,34 +33,45 @@ def by_date_range(events, start, end):
             event_start = event.dtstart.value
             event_end = event.dtend.value
 
-        if not event_start.tzinfo:
-            event_start = event_start.replace(tzinfo=utc)
-        if not event_end.tzinfo:
-            event_end = event_end.replace(tzinfo=utc)
+        event_start = event_start.replace(tzinfo=None)
+        event_end = event_end.replace(tzinfo=None)
+#         if not event_start.tzinfo:
+#             event_start = event_start.replace(tzinfo=utc)
+#         if not event_end.tzinfo:
+#             event_end = event_end.replace(tzinfo=utc)
 
         # Replace the dates in case we updated the timezone
         event.dtstart.value = event_start
         event.dtend.value = event_end
         
+#         event.prettyPrint()
+#         sys.stdout.flush()
+        
         event_rrule = getattr(event, 'rrule', None)
-        log.debug('checking %s - %s == %s', 
+        log.debug('checking %s %s - %s == %s',
+                  type(event),
                   event.dtstart.value, event.dtend.value,
                   event.summary.value,
                   )
-        try:
-            if event_rrule is not None:
-                duration = event.dtend.value - event.dtstart.value
-                log.debug('  duration %s', duration)
-                for recurrance in event.rruleset.between(start, end, inc=True):
-                    log.debug('  recurrance %s %s', recurrance, type(recurrance))
-                    dupe = event.__class__.duplicate(event)
-                    dupe.dtstart.value = recurrance.replace(tzinfo=utc)
-                    dupe.dtend.value = (recurrance + duration).replace(tzinfo=utc)
-                    yield dupe
-            elif event_start >= start and event_end <= end:
-                yield event
-        except TypeError:
-            event.prettyPrint()
-            raise
+        if event_rrule is not None:
+            duration = event.dtend.value - event.dtstart.value
+            log.debug('  duration %s', duration)
+            for recurrance in event.rruleset.between(start, end, inc=True):
+                log.debug('  recurrance %s %s', recurrance, type(recurrance))
+                dupe = event.__class__.duplicate(event)
+                dupe.dtstart.value = recurrance#.replace(tzinfo=utc)
+                dupe.dtend.value = (recurrance + duration)#.replace(tzinfo=utc)
+                yield dupe
+        elif event_start >= start and event_end <= end:
+            yield event
         
     
+def unique(events):
+    uids = set()
+    for event in events:
+        uid = event.uid.value
+        if uid not in uids:
+            uids.add(uid)
+            yield event
+        else:
+            log.debug('found duplicate event %s', uid)

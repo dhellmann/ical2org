@@ -75,11 +75,11 @@ def main(args=sys.argv[1:]):
     start_date = datetime.datetime.combine(
         datetime.date.today() - datetime.timedelta(options.days_ago),
         datetime.time.min,
-        ).replace(tzinfo=utc)
+        )#.replace(tzinfo=utc)
     end_date = datetime.datetime.combine(
         datetime.date.today() + datetime.timedelta(options.days_ahead),
         datetime.time.max,
-        ).replace(tzinfo=utc)
+        )#.replace(tzinfo=utc)
     logging.info('Starting %d days ago at %s', options.days_ago, start_date)
     logging.info('Ending %d days from now at %s', options.days_ahead, end_date)
 
@@ -95,12 +95,12 @@ def main(args=sys.argv[1:]):
 
     for calendar in calendar_generator:
         logging.info('Processing: %s', calendar.title)
-        for event in filter.by_date_range(calendar.get_events(),
-                                          start_date,
-                                          end_date,
-                                          ):
+        for event in filter.unique(filter.by_date_range(calendar.get_events(),
+                                                        start_date,
+                                                        end_date,
+                                                        )):
             logging.info('  %s', event.summary.value)
-            #print diary.format_for_diary(event, calendar.title)
+            print diary.format_for_diary(event, calendar.title)
     return
     
     

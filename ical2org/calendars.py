@@ -64,6 +64,14 @@ def get_by_titles(path, titles):
         if c.title in titles:
             yield c
 
+            
+def strip_timezone(date):
+    tz = date.tzinfo
+    if not tz:
+        return date
+    log.debug('stripping timezone %s from %s', tz, date)
+    return date.replace(tzinfo=None)
+
 
 class Calendar(object):
     """Simple calendar wrapper."""
@@ -87,5 +95,7 @@ class Calendar(object):
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
                     for event in component.vevent_list:
+                        #event.dtstart.value = strip_timezone(event.dtstart.value)
+                        #event.dtend.value = strip_timezone(event.dtend.value)
                         yield event
         return
