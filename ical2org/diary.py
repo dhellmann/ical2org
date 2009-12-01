@@ -36,5 +36,5 @@ def format_for_diary(event, calendar_title=None):
         response = '%%%%(diary-block %s %s) %s' % (start, end, event.summary.value)
     if calendar_title:
         response = '%s (%s)' % (response, calendar_title)
-    return response
+    return response + '\n'
 

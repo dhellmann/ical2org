@@ -52,7 +52,6 @@ def by_date_range(events, start, end):
                   )
         if event_rrule is not None:
             duration = event.dtend.value - event.dtstart.value
-            log.debug('  duration %s', duration)
             rruleset = event.getrruleset(False)
 
             # Clean up timezone values in rrules.
@@ -78,7 +77,7 @@ def by_date_range(events, start, end):
 
             # Explode the event into repeats
             for recurrance in rruleset.between(start, end, inc=True):
-                log.debug('  recurrance %s %s', recurrance, type(recurrance))
+                log.debug('  recurrance %s', recurrance)
                 dupe = event.__class__.duplicate(event)
                 dupe.dtstart.value = tz.normalize_to_utc(recurrance)
                 dupe.dtend.value = tz.normalize_to_utc(recurrance + duration)
@@ -89,11 +88,13 @@ def by_date_range(events, start, end):
         
     
 def unique(events):
-    uids = set()
+    """Filter out duplicate events based on uid and start time.
+    """
+    keys = set()
     for event in events:
-        uid = event.uid.value
-        if uid not in uids:
-            uids.add(uid)
+        key = (event.uid.value, event.dtstart.value)
+        if key not in keys:
+            keys.add(key)
             yield event
         else:
-            log.debug('found duplicate event %s', uid)
+            log.debug('found duplicate event %s', key)

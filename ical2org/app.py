@@ -92,14 +92,21 @@ def main(args=sys.argv[1:]):
         calendar_generator = calendars.discover(path=options.input_directory,
                                                 active_only=options.active_only)
 
-    for calendar in calendar_generator:
-        logging.info('Processing: %s', calendar.title)
-        for event in filter.unique(filter.by_date_range(calendar.get_events(),
-                                                        start_date,
-                                                        end_date,
-                                                        )):
-            logging.info('  %s', event.summary.value)
-            print diary.format_for_diary(event, calendar.title)
+    output = sys.stdout
+    if options.output_file_name:
+        output = open(options.output_file_name, 'wt')
+    try:
+        for calendar in calendar_generator:
+            logging.info('Processing: %s', calendar.title)
+            for event in filter.unique(filter.by_date_range(calendar.get_events(),
+                                                            start_date,
+                                                            end_date,
+                                                            )):
+                logging.info('  %s', event.summary.value)
+                output.write(diary.format_for_diary(event, calendar.title))
+    finally:
+        if output != sys.stdout:
+            output.close()
     return
     
     
