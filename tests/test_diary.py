@@ -21,7 +21,7 @@ def test_format_allday():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     text = format_for_diary(e)
-    assert text == '11/26/09 00:00-00:00 This is a note', text
+    assert text == '11/26/09 00:00-00:00 This is a note\n', text
     return
 
 def test_format_with_calendar_title():
@@ -33,7 +33,7 @@ def test_format_with_calendar_title():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     text = format_for_diary(e, 'Title')
-    assert text == '11/26/09 00:00-00:00 This is a note (Title)', text
+    assert text == '11/26/09 00:00-00:00 This is a note (Title)\n', text
     return
 
 def test_format_time_range():
@@ -45,7 +45,7 @@ def test_format_time_range():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
     text = format_for_diary(e)
-    assert text == '11/26/09 09:05-13:25 This is a note', text
+    assert text == '11/26/09 09:05-13:25 This is a note\n', text
     return
 
 def test_format_date_range():
@@ -57,5 +57,5 @@ def test_format_date_range():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
     text = format_for_diary(e)
-    assert text == '%%(diary-block 11 26 2009 12 26 2009) This is a note', text
+    assert text == '%%(diary-block 11 26 2009 12 26 2009) This is a note\n', text
     return
