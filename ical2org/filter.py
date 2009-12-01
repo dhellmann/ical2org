@@ -12,8 +12,9 @@ import sys
 
 import vobject
 
+from ical2org import tz
+
 log = logging.getLogger(__name__)
-utc = vobject.icalendar.utc
 
 def by_date_range(events, start, end):
     """Iterate over the incoming events and yield those that fall within the date range.
@@ -33,12 +34,8 @@ def by_date_range(events, start, end):
             event_start = event.dtstart.value
             event_end = event.dtend.value
 
-        event_start = event_start.replace(tzinfo=None)
-        event_end = event_end.replace(tzinfo=None)
-#         if not event_start.tzinfo:
-#             event_start = event_start.replace(tzinfo=utc)
-#         if not event_end.tzinfo:
-#             event_end = event_end.replace(tzinfo=utc)
+        event_start = tz.normalize_to_utc(event_start)
+        event_end = tz.normalize_to_utc(event_end)
 
         # Replace the dates in case we updated the timezone
         event.dtstart.value = event_start
@@ -48,20 +45,45 @@ def by_date_range(events, start, end):
 #         sys.stdout.flush()
         
         event_rrule = getattr(event, 'rrule', None)
-        log.debug('checking %s %s - %s == %s',
-                  type(event),
-                  event.dtstart.value, event.dtend.value,
+        log.debug('checking %s - %s == %s',
+                  event.dtstart.value,
+                  event.dtend.value,
                   event.summary.value,
                   )
         if event_rrule is not None:
             duration = event.dtend.value - event.dtstart.value
             log.debug('  duration %s', duration)
-            for recurrance in event.rruleset.between(start, end, inc=True):
+            rruleset = event.getrruleset(False)
+
+            # Clean up timezone values in rrules.
+            # Based on ShootQ calendarparser module.
+            for rrule in rruleset._rrule:
+                # normalize start and stop dates for each recurrance
+                if rrule._dtstart:
+                    rrule._dtstart = tz.normalize_to_utc(rrule._dtstart)
+                if hasattr(rrule, '_dtend') and rrule._dtend:
+                    rrule._dtend = tz.normalize_to_utc(rrule._dtend)
+                if rrule._until:
+                    rrule._until = tz.normalize_to_utc(rrule._until)
+            if rruleset._exdate:
+                # normalize any exclusion dates
+                exdates = []
+                for exdate in rruleset._exdate:
+                    exdate = tz.normalize_to_utc(exdate)
+                rruleset._exdate = exdates
+            if hasattr(rruleset, '_tzinfo') and rruleset._tzinfo is None:
+                # if the ruleset doesn't have a time zone, give it
+                # the local zone
+                rruleset._tzinfo = tz.local
+
+            # Explode the event into repeats
+            for recurrance in rruleset.between(start, end, inc=True):
                 log.debug('  recurrance %s %s', recurrance, type(recurrance))
                 dupe = event.__class__.duplicate(event)
-                dupe.dtstart.value = recurrance#.replace(tzinfo=utc)
-                dupe.dtend.value = (recurrance + duration)#.replace(tzinfo=utc)
+                dupe.dtstart.value = tz.normalize_to_utc(recurrance)
+                dupe.dtend.value = tz.normalize_to_utc(recurrance + duration)
                 yield dupe
+                
         elif event_start >= start and event_end <= end:
             yield event
         

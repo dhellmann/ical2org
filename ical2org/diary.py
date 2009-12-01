@@ -9,7 +9,7 @@ import datetime
 
 import vobject
 
-utc = vobject.icalendar.utc
+from ical2org import tz
 
 def format_for_diary(event, calendar_title=None):
     """Format a diary file entry for the event within the calendar
@@ -18,8 +18,11 @@ def format_for_diary(event, calendar_title=None):
     event_end = event.dtend.value
     if not isinstance(event_start, datetime.datetime):
         log.debug('rebuilding dates')
-        event_start = datetime.datetime.combine(event_start, datetime.time.min)
-        event_end = datetime.datetime.combine(event_end, datetime.time.max)
+        event_start = datetime.datetime.combine(event_start, datetime.time.min).replace(tzinfo=tz.local)
+        event_end = datetime.datetime.combine(event_end, datetime.time.max).replace(tzinfo=tz.local)
+
+    event_start = event_start.astimezone(tz.local)
+    event_end = event_end.astimezone(tz.local)
         
     if event_start.date() == event_end.date():
         # MM/DD/YY HH:MM-HH:MM summary (calendar title)

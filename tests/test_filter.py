@@ -25,7 +25,6 @@ def setup():
     e = c.add('vevent')
     e.add('summary').value = "past"
     start = e.add('dtstart')
-    utc = vobject.icalendar.utc
     start.value = datetime.datetime(2008, 11, 26, tzinfo = utc)
     end = e.add('dtend')
     end.value = datetime.datetime(2008, 11, 26, tzinfo = utc)
@@ -40,7 +39,6 @@ def setup():
     e = c.add('vevent')
     e.add('summary').value = "future"
     start = e.add('dtstart')
-    utc = vobject.icalendar.utc
     start.value = datetime.datetime(2010, 11, 26, tzinfo = utc)
     end = e.add('dtend')
     end.value = datetime.datetime(2010, 11, 26, tzinfo = utc)

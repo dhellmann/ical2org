@@ -14,9 +14,9 @@ import plistlib
 
 import vobject
 
-log = logging.getLogger(__name__)
-utc = vobject.icalendar.utc
+from ical2org import tz
 
+log = logging.getLogger(__name__)
 
 def _get_candidate_directories(path):
     """Return a list of directory names under path
@@ -64,14 +64,6 @@ def get_by_titles(path, titles):
         if c.title in titles:
             yield c
 
-            
-def strip_timezone(date):
-    tz = date.tzinfo
-    if not tz:
-        return date
-    log.debug('stripping timezone %s from %s', tz, date)
-    return date.replace(tzinfo=None)
-
 
 class Calendar(object):
     """Simple calendar wrapper."""
@@ -95,7 +87,7 @@ class Calendar(object):
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
                     for event in component.vevent_list:
-                        #event.dtstart.value = strip_timezone(event.dtstart.value)
-                        #event.dtend.value = strip_timezone(event.dtend.value)
+                        event.dtstart.value = tz.normalize_to_utc(event.dtstart.value)
+                        event.dtend.value = tz.normalize_to_utc(event.dtend.value)
                         yield event
         return
