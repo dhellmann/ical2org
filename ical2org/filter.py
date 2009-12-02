@@ -23,16 +23,21 @@ def by_date_range(events, start, end):
     for event in events:
 
         # Fix time zones in date objects
-        if not isinstance(event.dtstart.value, datetime.datetime):
+        event_start = event.dtstart.value
+        event_end = event.dtend.value
+        if not isinstance(event_start, datetime.datetime):
             event_start = datetime.datetime.combine(event.dtstart.value,
                                                     datetime.time.min,
                                                     )
-            event_end = datetime.datetime.combine(event.dtend.value,
-                                                  datetime.time.max,
-                                                  )
-        else:
-            event_start = event.dtstart.value
-            event_end = event.dtend.value
+            if event_start == event_end:
+                event_end = datetime.datetime.combine(event.dtend.value,
+                                                      datetime.time.max,
+                                                      )
+            else:
+                event_end = datetime.datetime.combine(event.dtend.value,
+                                                      datetime.time.min,
+                                                      )
+                
 
         event_start = tz.normalize_to_utc(event_start)
         event_end = tz.normalize_to_utc(event_end)

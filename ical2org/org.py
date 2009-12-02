@@ -30,8 +30,8 @@ class OrgTreeFormatter(format.CalendarFormatter):
             time_range = '<%s-%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
                                       event_end.strftime('%H:%M'))
         else:
-            time_range = '<%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
-                                         event_end.strftime('%Y-%m-%d %a %H:%M'))
+            time_range = '\n   <%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
+                                              event_end.strftime('%Y-%m-%d %a %H:%M'))
         
         lines = ['** %s %s' % (event.summary.value, time_range) ]
         if getattr(event, 'location', None):
