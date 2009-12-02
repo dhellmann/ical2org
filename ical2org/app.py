@@ -11,7 +11,7 @@ import optparse
 import os
 import sys
 
-from ical2org import calendars, filter, diary, tz
+from ical2org import calendars, filter, diary, tz, org
 
 import vobject
 
@@ -23,6 +23,7 @@ VERBOSE_LEVELS = {
 
 FORMATTER_FACTORIES = {
     'diary':diary.DiaryFormatter,
+    'org':org.OrgTreeFormatter,
     }
 
 def main(args=sys.argv[1:]):
