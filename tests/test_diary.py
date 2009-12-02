@@ -9,7 +9,7 @@
 import vobject
 import datetime
 
-from ical2org.diary import format_for_diary
+from ical2org.diary import DiaryFormatter
 from ical2org import tz
 
 def test_format_allday():
@@ -20,7 +20,8 @@ def test_format_allday():
     start.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
-    text = format_for_diary(e)
+    f = DiaryFormatter(None)
+    text = f.format_event(e)
     assert text == '11/26/09 00:00-00:00 This is a note\n', text
     return
 
@@ -32,7 +33,11 @@ def test_format_with_calendar_title():
     start.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
-    text = format_for_diary(e, 'Title')
+    f = DiaryFormatter(None)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    text = f.format_event(e)
     assert text == '11/26/09 00:00-00:00 This is a note (Title)\n', text
     return
 
@@ -44,7 +49,8 @@ def test_format_time_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
-    text = format_for_diary(e)
+    f = DiaryFormatter(None)
+    text = f.format_event(e)
     assert text == '11/26/09 09:05-13:25 This is a note\n', text
     return
 
@@ -56,6 +62,7 @@ def test_format_date_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
-    text = format_for_diary(e)
+    f = DiaryFormatter(None)
+    text = f.format_event(e)
     assert text == '%%(diary-block 11 26 2009 12 26 2009) This is a note\n', text
     return

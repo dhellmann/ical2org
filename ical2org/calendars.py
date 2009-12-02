@@ -69,7 +69,7 @@ class Calendar(object):
     """Simple calendar wrapper."""
     def __init__(self, path):
         self.path = path
-        log.debug('Tring to load calendar in %s', path)
+        log.debug('Trying to load calendar in %s', path)
         info_file = os.path.join(path, 'Info.plist')
         if not os.path.isfile(info_file):
             raise ValueError('%s does not look like a calendar' % path)
@@ -87,7 +87,9 @@ class Calendar(object):
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
                     for event in component.vevent_list:
+                        #event.prettyPrint()
                         event.dtstart.value = tz.normalize_to_utc(event.dtstart.value)
                         event.dtend.value = tz.normalize_to_utc(event.dtend.value)
+                        #event.prettyPrint()
                         yield event
         return

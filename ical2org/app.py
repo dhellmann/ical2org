@@ -21,6 +21,10 @@ VERBOSE_LEVELS = {
     2:logging.DEBUG,
     }
 
+FORMATTER_FACTORIES = {
+    'diary':diary.DiaryFormatter,
+    }
+
 def main(args=sys.argv[1:]):
     option_parser = optparse.OptionParser(
         usage='usage: ical2org [options] [calendar titles]',
@@ -65,6 +69,14 @@ def main(args=sys.argv[1:]):
                              default=os.path.expanduser('~/Library/Calendars'),
                              help='Directory containing calendars. Defaults to ~/Library/Calendars.',
                              )
+    option_parser.add_option('--format', '-f',
+                             action='store',
+                             dest='format',
+                             type='choice',
+                             choices=FORMATTER_FACTORIES.keys(),
+                             default='diary',
+                             help='Output format. One of %s. Defaults to "diary".' % FORMATTER_FACTORIES.keys(),
+                             )
                              
     options, calendar_titles = option_parser.parse_args(args)
 
@@ -96,15 +108,19 @@ def main(args=sys.argv[1:]):
     if options.output_file_name:
         output = open(options.output_file_name, 'wt')
     try:
+        formatter = FORMATTER_FACTORIES[options.format](output)
         for calendar in calendar_generator:
             logging.info('Processing: %s', calendar.title)
+            formatter.start_calendar(calendar)
             for event in filter.unique(filter.by_date_range(calendar.get_events(),
                                                             start_date,
                                                             end_date,
                                                             )):
                 logging.info('  %s', event.summary.value)
-                output.write(diary.format_for_diary(event, calendar.title))
+                formatter.add_event(event)
+            formatter.end_calendar(calendar)
     finally:
+        formatter.close()
         if output != sys.stdout:
             output.close()
     return
