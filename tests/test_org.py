@@ -23,7 +23,7 @@ def test_format_allday():
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     f = OrgTreeFormatter(None)
     text = f.format_event(e)
-    assert text == '** This is a note <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
 def test_format_with_calendar_title():
@@ -41,7 +41,7 @@ def test_format_with_calendar_title():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\n** This is a note <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '* Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
 def test_format_time_range():
@@ -54,7 +54,7 @@ def test_format_time_range():
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
     f = OrgTreeFormatter(None)
     text = f.format_event(e)
-    assert text == '** This is a note <2009-11-26 Thu 09:05-13:25>\n', text
+    assert text == '** This is a note\n   <2009-11-26 Thu 09:05-13:25>\n', text
     return
 
 def test_format_date_range():
@@ -67,7 +67,7 @@ def test_format_date_range():
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
     f = OrgTreeFormatter(None)
     text = f.format_event(e)
-    expected = '** This is a note \n   <2009-11-26 Thu 09:05>--<2009-12-26 Sat 13:25>\n'
+    expected = '** This is a note\n   <2009-11-26 Thu 09:05>--<2009-12-26 Sat 13:25>\n'
     print repr(expected)
     print repr(text)
     assert text == expected, text

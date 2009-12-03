@@ -49,8 +49,14 @@ def main(args=sys.argv[1:]):
     option_parser.add_option('-v', '--verbose',
                              action='count',
                              dest='verbose_level',
-                             default=0,
+                             default=1,
                              help='Increase verbose level',
+                             )
+    option_parser.add_option('-q', '--quiet',
+                             action='store_const',
+                             const=0,
+                             dest='verbose_level',
+                             help='Turn off verbose output',
                              )
     option_parser.add_option('--output-file', '-o',
                              action='store',
