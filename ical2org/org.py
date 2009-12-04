@@ -5,6 +5,7 @@
 #
 """
 """
+import ConfigParser
 
 from ical2org import format, tz
 
@@ -20,7 +21,20 @@ class OrgTreeFormatter(format.CalendarFormatter):
         - `calendar`:
         """
         self.active_calendar = calendar
-        self.output.write('* %s\n' % calendar.title)
+        self.output.write('* %s' % calendar.title)
+        try:
+            tags = self.config.get(calendar.title, 'tags')
+            tags = tags.strip(':')
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            pass
+        else:
+            self.output.write('\t:%s:' % tags)
+        self.output.write('\n')
+        try:
+            category = self.config.get(calendar.title, 'category')
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            category = calendar.title
+        self.output.write('  :CATEGORY: %s\n' % category)
         return
 
     def format_event(self, event):
@@ -32,11 +46,12 @@ class OrgTreeFormatter(format.CalendarFormatter):
         else:
             time_range = '<%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
                                               event_end.strftime('%Y-%m-%d %a %H:%M'))
-        
+
         lines = ['** %s\n   %s' % (event.summary.value, time_range) ]
+
         if getattr(event, 'location', None):
             lines.append('   - Location: %s' % event.location.value)
-# FIXME - Unicode errors from some events
+
         if getattr(event, 'description', None):
             desc_lines = event.description.value.splitlines()
             lines.append('   - %s' % desc_lines[0])

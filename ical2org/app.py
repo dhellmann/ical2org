@@ -5,6 +5,7 @@
 """Command line interface for ical2org.
 """
 
+from ConfigParser import SafeConfigParser as ConfigParser
 import datetime
 import logging
 import optparse
@@ -32,6 +33,12 @@ def main(args=sys.argv[1:]):
         conflict_handler='resolve',
         description='Convert iCal calendar entries to org-mode data for use with emacs',
         )
+    option_parser.add_option('-c', '--config',
+                             action='store',
+                             dest='config_filename',
+                             help='Configuration file name. Defaults to ~/.ical2org',
+                             default=os.path.expanduser('~/.ical2org'),
+                             )
     option_parser.add_option('--begin', '-b', '--days-ago',
                              action='store',
                              dest='days_ago',
@@ -90,6 +97,9 @@ def main(args=sys.argv[1:]):
     log_level = VERBOSE_LEVELS.get(options.verbose_level, logging.DEBUG)
     logging.basicConfig(level=log_level, format='%(message)s')
 
+    config = ConfigParser()
+    config.read([options.config_filename])
+
     start_date = tz.normalize_to_utc(datetime.datetime.combine(
         datetime.date.today() - datetime.timedelta(options.days_ago),
         datetime.time.min,
@@ -115,7 +125,7 @@ def main(args=sys.argv[1:]):
     if options.output_file_name:
         output = open(options.output_file_name, 'wt')
     try:
-        formatter = FORMATTER_FACTORIES[options.format](output)
+        formatter = FORMATTER_FACTORIES[options.format](output, config)
         for calendar in calendar_generator:
             logging.info('Processing: %s', calendar.title)
             formatter.start_calendar(calendar)

@@ -6,6 +6,8 @@
 """
 """
 
+from ConfigParser import SafeConfigParser as ConfigParser
+
 import vobject
 import datetime
 
@@ -20,7 +22,7 @@ def test_format_allday():
     start.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
-    f = DiaryFormatter(None)
+    f = DiaryFormatter(None, ConfigParser())
     text = f.format_event(e)
     assert text == '11/26/09 00:00-00:00 This is a note\n', text
     return
@@ -33,7 +35,7 @@ def test_format_with_calendar_title():
     start.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, tzinfo = tz.local)
-    f = DiaryFormatter(None)
+    f = DiaryFormatter(None, ConfigParser())
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -49,7 +51,7 @@ def test_format_time_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
-    f = DiaryFormatter(None)
+    f = DiaryFormatter(None, ConfigParser())
     text = f.format_event(e)
     assert text == '11/26/09 09:05-13:25 This is a note\n', text
     return
@@ -62,7 +64,7 @@ def test_format_date_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
-    f = DiaryFormatter(None)
+    f = DiaryFormatter(None, ConfigParser())
     text = f.format_event(e)
     assert text == '%%(diary-block 11 26 2009 12 26 2009) This is a note\n', text
     return

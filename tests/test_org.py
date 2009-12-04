@@ -5,6 +5,7 @@
 #
 """
 """
+from ConfigParser import SafeConfigParser as ConfigParser
 from cStringIO import StringIO
 
 import vobject
@@ -21,7 +22,7 @@ def test_format_allday():
     start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
-    f = OrgTreeFormatter(None)
+    f = OrgTreeFormatter(None, ConfigParser())
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
@@ -35,13 +36,13 @@ def test_format_with_calendar_title():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output)
+    f = OrgTreeFormatter(output, ConfigParser())
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
 def test_format_with_description():
@@ -54,13 +55,13 @@ def test_format_with_description():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output)
+    f = OrgTreeFormatter(output, ConfigParser())
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    expected = '* Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n   - This is more detail\n     on two lines\n'
+    expected = '* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n   - This is more detail\n     on two lines\n'
     print repr(expected)
     print repr(text)
     assert text == expected
@@ -74,7 +75,7 @@ def test_format_time_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
-    f = OrgTreeFormatter(None)
+    f = OrgTreeFormatter(None, ConfigParser())
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-26 Thu 09:05-13:25>\n', text
     return
@@ -87,10 +88,73 @@ def test_format_date_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
-    f = OrgTreeFormatter(None)
+    f = OrgTreeFormatter(None, ConfigParser())
     text = f.format_event(e)
     expected = '** This is a note\n   <2009-11-26 Thu 09:05>--<2009-12-26 Sat 13:25>\n'
     print repr(expected)
     print repr(text)
     assert text == expected, text
+    return
+
+def test_format_with_calendar_tags():
+    c = vobject.iCalendar()
+    e = c.add('vevent')
+    e.add('summary').value = "This is a note"
+    start = e.add('dtstart')
+    start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    end = e.add('dtend')
+    end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    output = StringIO()
+    config = ConfigParser()
+    config.add_section('Title')
+    config.set('Title', 'tags', ':tag_value:')
+    f = OrgTreeFormatter(output, config)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    f.add_event(e)
+    text = output.getvalue()
+    assert text == '* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    return
+
+def test_format_with_calendar_tags_no_colons():
+    c = vobject.iCalendar()
+    e = c.add('vevent')
+    e.add('summary').value = "This is a note"
+    start = e.add('dtstart')
+    start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    end = e.add('dtend')
+    end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    output = StringIO()
+    config = ConfigParser()
+    config.add_section('Title')
+    config.set('Title', 'tags', 'tag_value')
+    f = OrgTreeFormatter(output, config)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    f.add_event(e)
+    text = output.getvalue()
+    assert text == '* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    return
+
+def test_format_with_category():
+    c = vobject.iCalendar()
+    e = c.add('vevent')
+    e.add('summary').value = "This is a note"
+    start = e.add('dtstart')
+    start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    end = e.add('dtend')
+    end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    output = StringIO()
+    config = ConfigParser()
+    config.add_section('Title')
+    config.set('Title', 'category', 'the_cat')
+    f = OrgTreeFormatter(output, config)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    f.add_event(e)
+    text = output.getvalue()
+    assert text == '* Title\n  :CATEGORY: the_cat\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return

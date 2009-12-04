@@ -10,13 +10,15 @@ class CalendarFormatter(object):
     """Base class for formatters.
     """
     
-    def __init__(self, output):
+    def __init__(self, output, config):
         """Initialize
         
         Arguments:
-        - `output`: 
+        - `output`: Open stream for writing output data.
+        - `config`: ConfigParser instance from the application.
         """
         self.output = output
+        self.config = config
         return
 
     def close(self):
