@@ -44,6 +44,28 @@ def test_format_with_calendar_title():
     assert text == '* Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
+def test_format_with_description():
+    c = vobject.iCalendar()
+    e = c.add('vevent')
+    e.add('summary').value = "This is a note"
+    e.add('description').value = "This is more detail\non two lines"
+    start = e.add('dtstart')
+    start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    end = e.add('dtend')
+    end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    output = StringIO()
+    f = OrgTreeFormatter(output)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    f.add_event(e)
+    text = output.getvalue()
+    expected = '* Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n   - This is more detail\n     on two lines\n'
+    print repr(expected)
+    print repr(text)
+    assert text == expected
+    return
+
 def test_format_time_range():
     c = vobject.iCalendar()
     e = c.add('vevent')

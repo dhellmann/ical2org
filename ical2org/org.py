@@ -37,10 +37,10 @@ class OrgTreeFormatter(format.CalendarFormatter):
         if getattr(event, 'location', None):
             lines.append('   - Location: %s' % event.location.value)
 # FIXME - Unicode errors from some events
-#         if getattr(event, 'description', None):
-#             lines.extend([ '   %s' % l
-#                            for l in event.description.value.splitlines()
-#                            ])
+        if getattr(event, 'description', None):
+            desc_lines = event.description.value.splitlines()
+            lines.append('   - %s' % desc_lines[0])
+            lines.extend([ '     %s' % l for l in desc_lines[1:]])
 
         lines.append('')
         return '\n'.join(lines)
