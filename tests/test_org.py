@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# coding: utf-8
 #
 # Copyright (c) 2009 Doug Hellmann.  All rights reserved.
 #
@@ -7,6 +7,7 @@
 """
 from ConfigParser import SafeConfigParser as ConfigParser
 from cStringIO import StringIO
+import os
 
 import vobject
 import datetime
@@ -22,7 +23,8 @@ def test_format_allday():
     start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
-    f = OrgTreeFormatter(None, ConfigParser())
+    output = StringIO()
+    f = OrgTreeFormatter(output, ConfigParser())
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
@@ -42,7 +44,7 @@ def test_format_with_calendar_title():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '# -*- coding: utf-8 -*-\n* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n'
     return
 
 def test_format_with_description():
@@ -61,7 +63,7 @@ def test_format_with_description():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    expected = '* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n   - This is more detail\n     on two lines\n'
+    expected = '# -*- coding: utf-8 -*-\n* Title\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n   - This is more detail\n     on two lines\n'
     print repr(expected)
     print repr(text)
     assert text == expected
@@ -75,7 +77,8 @@ def test_format_time_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
-    f = OrgTreeFormatter(None, ConfigParser())
+    output = StringIO()
+    f = OrgTreeFormatter(output, ConfigParser())
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-26 Thu 09:05-13:25>\n', text
     return
@@ -88,7 +91,8 @@ def test_format_date_range():
     start.value = datetime.datetime(2009, 11, 26, 9, 5, tzinfo = tz.local)
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
-    f = OrgTreeFormatter(None, ConfigParser())
+    output = StringIO()
+    f = OrgTreeFormatter(output, ConfigParser())
     text = f.format_event(e)
     expected = '** This is a note\n   <2009-11-26 Thu 09:05>--<2009-12-26 Sat 13:25>\n'
     print repr(expected)
@@ -114,7 +118,7 @@ def test_format_with_calendar_tags():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '# -*- coding: utf-8 -*-\n* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
 def test_format_with_calendar_tags_no_colons():
@@ -135,7 +139,7 @@ def test_format_with_calendar_tags_no_colons():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '# -*- coding: utf-8 -*-\n* Title\t:tag_value:\n  :CATEGORY: Title\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
 
 def test_format_with_category():
@@ -156,5 +160,24 @@ def test_format_with_category():
     f.start_calendar(FauxCalendar())
     f.add_event(e)
     text = output.getvalue()
-    assert text == '* Title\n  :CATEGORY: the_cat\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    assert text == '# -*- coding: utf-8 -*-\n* Title\n  :CATEGORY: the_cat\n** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
+    return
+
+def test_format_unicode():
+    c = vobject.iCalendar()
+    e = c.add('vevent')
+    e.add('summary').value = "Unicode event"
+    start = e.add('dtstart')
+    start.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    end = e.add('dtend')
+    end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
+    e.add('description').value = u'This is the description. It has “unicode quotes.”'
+    output = StringIO()
+    config = ConfigParser()
+    f = OrgTreeFormatter(output, config)
+    class FauxCalendar(object):
+        title = 'Title'
+    f.start_calendar(FauxCalendar())
+    text = f.format_event(e)
+    assert text == u'** Unicode event\n   <2009-11-06 Fri 00:00-00:00>\n   - This is the description. It has “unicode quotes.”\n', text
     return

@@ -5,6 +5,7 @@
 """Command line interface for ical2org.
 """
 
+import codecs
 from ConfigParser import SafeConfigParser as ConfigParser
 import datetime
 import logging
@@ -123,7 +124,7 @@ def main(args=sys.argv[1:]):
 
     output = sys.stdout
     if options.output_file_name:
-        output = open(options.output_file_name, 'wt')
+        output = codecs.open(options.output_file_name, 'wt', 'UTF-8')
     try:
         formatter = FORMATTER_FACTORIES[options.format](output, config)
         for calendar in calendar_generator:

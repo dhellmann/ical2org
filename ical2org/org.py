@@ -12,6 +12,11 @@ from ical2org import format, tz
 class OrgTreeFormatter(format.CalendarFormatter):
     """Formats output as an org outline.
     """
+
+    def __init__(self, output, config):
+        format.CalendarFormatter.__init__(self, output, config)
+        self.output.write('# -*- coding: utf-8 -*-\n')
+        return
     
     def start_calendar(self, calendar):
         """Begin a calendar node.
@@ -52,6 +57,7 @@ class OrgTreeFormatter(format.CalendarFormatter):
         if getattr(event, 'location', None):
             lines.append('   - Location: %s' % event.location.value)
 
+# Unicode error for PyATL calendar events.
         if getattr(event, 'description', None):
             desc_lines = event.description.value.splitlines()
             lines.append('   - %s' % desc_lines[0])
