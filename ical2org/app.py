@@ -8,6 +8,7 @@
 import codecs
 from ConfigParser import SafeConfigParser as ConfigParser
 import datetime
+import inspect
 import logging
 import optparse
 import os
@@ -27,6 +28,36 @@ FORMATTER_FACTORIES = {
     'diary':diary.DiaryFormatter,
     'org':org.OrgTreeFormatter,
     }
+
+def remember_formatter_option(option, opt_str, value, parser):
+    """Receive and handle a formatter-specific option.
+    
+    :param option: The parsed option results.
+    :param opt_str: The option string from the command line.
+    :param value: The option value.  Should be ``name=value``.
+    :param parser: The option parser.
+    """
+    if not hasattr(option, 'formatter_options'):
+        option.formatter_options = {}
+    parsed = value.split('=', 1)
+    if len(parsed) == 1:
+        # flag
+        option.formatter_options[value] = True
+    else:
+        # name=value
+        opt_name, opt_val = parsed
+        option.formatter_options[opt_name] = opt_val
+    return
+
+def show_verbose_help(option, opt_str, value, parser):
+    parser.print_help()
+    print '\nFormatters:\n'
+    for name, formatter in sorted(FORMATTER_FACTORIES.items()):
+        print name
+        print '-' * len(name)
+        print inspect.getdoc(formatter)
+    parser.exit()
+    return
 
 def main(args=sys.argv[1:]):
     option_parser = optparse.OptionParser(
@@ -92,6 +123,17 @@ def main(args=sys.argv[1:]):
                              default='diary',
                              help='Output format. One of %s. Defaults to "diary".' % FORMATTER_FACTORIES.keys(),
                              )
+    option_parser.add_option('--opt', '--formatter-option',
+                             action='callback',
+                             type='string',
+                             callback=remember_formatter_option,
+                             help='Formatter-specific option name=value',
+                             )
+    option_parser.add_option('--help',
+                             action='callback',
+                             callback=show_verbose_help,
+                             help='Verbose help',
+                             )
                              
     options, calendar_titles = option_parser.parse_args(args)
 
@@ -101,6 +143,7 @@ def main(args=sys.argv[1:]):
     config = ConfigParser()
     config.read([options.config_filename])
 
+    # Compute the date range for items to be included in our output.
     start_date = tz.normalize_to_utc(datetime.datetime.combine(
         datetime.date.today() - datetime.timedelta(options.days_ago),
         datetime.time.min,
@@ -115,6 +158,7 @@ def main(args=sys.argv[1:]):
     if options.output_file_name:
         logging.info('Writing to %s', options.output_file_name)
 
+    # Load the calendars
     if calendar_titles:
         calendar_generator = calendars.get_by_titles(path=options.input_directory,
                                                      titles=calendar_titles)
@@ -122,11 +166,12 @@ def main(args=sys.argv[1:]):
         calendar_generator = calendars.discover(path=options.input_directory,
                                                 active_only=options.active_only)
 
+    # Process the calendar data
     output = sys.stdout
     if options.output_file_name:
         output = codecs.open(options.output_file_name, 'wt', 'UTF-8')
     try:
-        formatter = FORMATTER_FACTORIES[options.format](output, config)
+        formatter = FORMATTER_FACTORIES[options.format](output, config, options)
         for calendar in calendar_generator:
             logging.info('Processing: %s', calendar.title)
             formatter.start_calendar(calendar)

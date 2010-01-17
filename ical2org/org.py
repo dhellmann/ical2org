@@ -13,8 +13,8 @@ class OrgTreeFormatter(format.CalendarFormatter):
     """Formats output as an org outline.
     """
 
-    def __init__(self, output, config):
-        format.CalendarFormatter.__init__(self, output, config)
+    def __init__(self, output, config, options):
+        format.CalendarFormatter.__init__(self, output, config, options)
         self.output.write('# -*- coding: utf-8 -*-\n')
         return
     
