@@ -24,7 +24,7 @@ def test_format_allday():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output, ConfigParser())
+    f = OrgTreeFormatter(output, ConfigParser(), None)
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-06 Fri 00:00-00:00>\n', text
     return
@@ -38,7 +38,7 @@ def test_format_with_calendar_title():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output, ConfigParser())
+    f = OrgTreeFormatter(output, ConfigParser(), None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -57,7 +57,7 @@ def test_format_with_description():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 6, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output, ConfigParser())
+    f = OrgTreeFormatter(output, ConfigParser(), None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -78,7 +78,7 @@ def test_format_time_range():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 11, 26, 13, 25, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output, ConfigParser())
+    f = OrgTreeFormatter(output, ConfigParser(), None)
     text = f.format_event(e)
     assert text == '** This is a note\n   <2009-11-26 Thu 09:05-13:25>\n', text
     return
@@ -92,7 +92,7 @@ def test_format_date_range():
     end = e.add('dtend')
     end.value = datetime.datetime(2009, 12, 26, 13, 25, tzinfo = tz.local)
     output = StringIO()
-    f = OrgTreeFormatter(output, ConfigParser())
+    f = OrgTreeFormatter(output, ConfigParser(), None)
     text = f.format_event(e)
     expected = '** This is a note\n   <2009-11-26 Thu 09:05>--<2009-12-26 Sat 13:25>\n'
     print repr(expected)
@@ -112,7 +112,7 @@ def test_format_with_calendar_tags():
     config = ConfigParser()
     config.add_section('Title')
     config.set('Title', 'tags', ':tag_value:')
-    f = OrgTreeFormatter(output, config)
+    f = OrgTreeFormatter(output, config, None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -133,7 +133,7 @@ def test_format_with_calendar_tags_no_colons():
     config = ConfigParser()
     config.add_section('Title')
     config.set('Title', 'tags', 'tag_value')
-    f = OrgTreeFormatter(output, config)
+    f = OrgTreeFormatter(output, config, None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -154,7 +154,7 @@ def test_format_with_category():
     config = ConfigParser()
     config.add_section('Title')
     config.set('Title', 'category', 'the_cat')
-    f = OrgTreeFormatter(output, config)
+    f = OrgTreeFormatter(output, config, None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
@@ -174,7 +174,7 @@ def test_format_unicode():
     e.add('description').value = u'This is the description. It has “unicode quotes.”'
     output = StringIO()
     config = ConfigParser()
-    f = OrgTreeFormatter(output, config)
+    f = OrgTreeFormatter(output, config, None)
     class FauxCalendar(object):
         title = 'Title'
     f.start_calendar(FauxCalendar())
