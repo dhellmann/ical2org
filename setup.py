@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 PROJECT = 'ical2org'
 VERSION = '1.0'
 
 setup(
-    name=PROJECT,
-    description='Convert iCal files to emacs org-mode data',
-    version=VERSION,
+    name = PROJECT,
+    description = 'Convert iCal files to emacs org-mode data',
+    version = VERSION,
 
+    # Meta-data
     author = 'Doug Hellmann',
     author_email = 'doug.hellmann@gmail.com',
     url = 'http://www.doughellmann.com/projects/ical2org/',
     download_url = 'http://www.doughellmann.com/downloads/%s-%s.tar.gz' % \
         (PROJECT, VERSION),
-
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: BSD License',
@@ -27,6 +27,18 @@ setup(
         'Topic :: Office/Business',
         'Topic :: Office/Business :: Scheduling',
         ],
-    
-    packages=['ical2org'],
+
+    # What goes into the distribution?
+    packages = find_packages(),
+    include_package_data = True,
+    entry_points = {
+        'console_scripts': [ 'ical2org = ical2org.app:main' ],
+        },
+
+    # What do we need to work?
+    install_requires=[
+        'distribute',
+        'pytz>=2009r',
+        'vobject>=0.8.1c',
+        ],
     )
