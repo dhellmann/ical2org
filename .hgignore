@@ -4,3 +4,6 @@ trace.txt
 cal.org
 dist
 ical2org.egg-info
+distribute-*.egg
+distribute-*.tar.gz
+pip-log.txt

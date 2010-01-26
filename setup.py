@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 
+# Bootstrap installation of Distribute
+import distribute_setup
+distribute_setup.use_setuptools()
+
 from setuptools import setup, find_packages
 
 PROJECT = 'ical2org'
-VERSION = '1.0'
+VERSION = '1.0.1'
+
+try:
+    long_description = open('README', 'rt').read()
+except IOError:
+    long_description = ''
 
 setup(
     name = PROJECT,
     description = 'Convert iCal files to emacs org-mode data',
+    long_description = long_description,
     version = VERSION,
 
     # Meta-data
@@ -34,10 +44,10 @@ setup(
     entry_points = {
         'console_scripts': [ 'ical2org = ical2org.app:main' ],
         },
+    py_modules = [ 'distribute_setup' ],
 
     # What do we need to work?
     install_requires=[
-        'distribute',
         'pytz>=2009r',
         'vobject>=0.8.1c',
         ],
