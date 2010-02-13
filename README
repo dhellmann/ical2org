@@ -11,6 +11,13 @@ org's agenda view.
 Installation
 ============
 
+ical2org is distributed as a set of `Python`_ source files, and
+requires that Python already be installed.  The source distribution is
+created using `Distribute`_, which will be installed with ical2org.
+
+Quick Install
+-------------
+
 Use normal Python application steps to install ical2org::
 
     $ pip install ical2org
@@ -19,9 +26,31 @@ or::
 
     $ easy_install ical2org
 
-The source distribution is created using `Distribute`_, which will be
-installed with ical2org.  The other dependencies (`pytz`_ and
-`vobject`_) will also be installed automatically.
+The other dependencies (`pytz`_ and `vobject`_) will be installed
+automatically.
+
+From Source
+-----------
+
+1. Download and install the dependencies.
+
+   * `pytz`_
+   * `vobject`_
+
+2. Download the latest release tarball from the `project home page
+   <http://www.doughellmann.com/projects/ical2org/>`_.
+
+3. Unpack the files::
+
+   $ tar zxvf ical2org-VERSION.tar.gz
+
+4. Run the installation script::
+
+   $ cd ical2org-VERSION
+   $ python setup.py install
+
+   .. note:: Some systems may require super-user privileges to install.
+
 
 Generating org-mode Files
 =========================
@@ -135,6 +164,8 @@ Command Line Options
 --help                Verbose help
 
 .. _org-mode: http://orgmode.org/
+
+.. _Python: http://www.python.org/
 
 .. _Distribute: http://packages.python.org/distribute/
 
