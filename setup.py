@@ -7,7 +7,7 @@ distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 
 PROJECT = 'ical2org'
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 try:
     long_description = open('README', 'rt').read()
