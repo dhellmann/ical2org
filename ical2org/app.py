@@ -167,7 +167,7 @@ def main(args=sys.argv[1:]):
                                                 active_only=options.active_only)
 
     # Process the calendar data
-    output = sys.stdout
+    output = codecs.getwriter('utf-8')(sys.stdout)
     if options.output_file_name:
         output = codecs.open(options.output_file_name, 'wt', 'UTF-8')
     try:
