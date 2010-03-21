@@ -172,3 +172,27 @@ Command Line Options
 .. _pytz: http://pytz.sourceforge.net/
 
 .. _vobject: http://vobject.skyhouseconsulting.com/
+
+History
+=======
+
+1.1
+
+  - Fix DST handling for recurring events.
+
+1.0.3
+
+  - Patches from KANEUCHI Tetsuya to fix problems with unicode console
+    output and empty descriptions
+
+1.0.2
+
+  - Updated installation instructions.
+
+1.0.1
+
+  - Fixed some installation annoyances.
+
+1.0
+
+  - First public release.
