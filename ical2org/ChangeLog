@@ -1,0 +1,16 @@
+2010-03-21  Doug Hellmann  <dhellmann@racemi.com>
+
+	* tz.py (assign_tz): Break out the logic for assigning a time zone
+	to a datetime so we can reuse it when not normalizing on UTC.
+
+	* org.py (OrgTreeFormatter.format_event): Include the UID property
+	of the event in the output, if we have it.
+
+	* filter.py (by_date_range): Use the local time zone for date
+	range comparison, instead of UTC.  This lets us handle DST
+	correctly, since we can convert the recurrance time to the DST
+	value *after* exploding the recurrance rule instead of before.
+
+	* calendars.py (Calendar.get_events): Let the filter deal with
+	normalizing the data so we only do it in one place.
+

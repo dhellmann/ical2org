@@ -19,43 +19,55 @@ log = logging.getLogger(__name__)
 def by_date_range(events, start, end):
     """Iterate over the incoming events and yield those that fall within the date range.
     """
-    log.debug('filtering between %s and %s', start, end)
+    local_start = start.astimezone(tz.local)
+    local_end = end.astimezone(tz.local)
+    log.debug('filtering between %s (%s) and %s (%s)', start, local_start, end, local_end)
     for event in events:
+        log.debug('checking %s - %s == %s for %s',
+                  event.dtstart.value,
+                  event.dtend.value,
+                  event.summary.value,
+                  getattr(event, 'uid', 'unknown UID'),
+                  )
 
         # Fix time zones in date objects
         event_start = event.dtstart.value
         event_end = event.dtend.value
         if not isinstance(event_start, datetime.datetime):
+            # Convert date to datetime.
+            # Start at beginning of the start day.
             event_start = datetime.datetime.combine(event.dtstart.value,
                                                     datetime.time.min,
                                                     )
             if event_start == event_end:
-                event_end = datetime.datetime.combine(event.dtend.value,
+                # Single day, so end at last time of start day
+                event_end = datetime.datetime.combine(event.dtstart.value,
                                                       datetime.time.max,
                                                       )
             else:
+                # Multiple days, end at last time of end day
                 event_end = datetime.datetime.combine(event.dtend.value,
-                                                      datetime.time.min,
+                                                      datetime.time.max,
                                                       )
-                
 
-        event_start = tz.normalize_to_utc(event_start)
-        event_end = tz.normalize_to_utc(event_end)
+        # Convert all times to UTC for comparison
+        event_start = tz.assign_tz(event_start)
+        event_end = tz.assign_tz(event_end)
 
         # Replace the dates in case we updated the timezone
         event.dtstart.value = event_start
         event.dtend.value = event_end
-        
+
+        # More detailed report
 #         event.prettyPrint()
 #         sys.stdout.flush()
-        
+
+        # Look for a recurrance rule
         event_rrule = getattr(event, 'rrule', None)
-        log.debug('checking %s - %s == %s',
-                  event.dtstart.value,
-                  event.dtend.value,
-                  event.summary.value,
-                  )
+        
         if event_rrule is not None:
+            # Repeating event, check for occurances within the
+            # time range.
             duration = event.dtend.value - event.dtstart.value
             rruleset = event.getrruleset(False)
 
@@ -64,16 +76,16 @@ def by_date_range(events, start, end):
             for rrule in rruleset._rrule:
                 # normalize start and stop dates for each recurrance
                 if rrule._dtstart:
-                    rrule._dtstart = tz.normalize_to_utc(rrule._dtstart)
+                    rrule._dtstart = tz.assign_tz(rrule._dtstart)
                 if hasattr(rrule, '_dtend') and rrule._dtend:
-                    rrule._dtend = tz.normalize_to_utc(rrule._dtend)
+                    rrule._dtend = tz.assign_tz(rrule._dtend)
                 if rrule._until:
-                    rrule._until = tz.normalize_to_utc(rrule._until)
+                    rrule._until = tz.assign_tz(rrule._until)
             if rruleset._exdate:
                 # normalize any exclusion dates
                 exdates = []
                 for exdate in rruleset._exdate:
-                    exdate = tz.normalize_to_utc(exdate)
+                    exdate = tz.assign_tz(exdate)
                 rruleset._exdate = exdates
             if hasattr(rruleset, '_tzinfo') and rruleset._tzinfo is None:
                 # if the ruleset doesn't have a time zone, give it
@@ -81,15 +93,25 @@ def by_date_range(events, start, end):
                 rruleset._tzinfo = tz.local
 
             # Explode the event into repeats
-            for recurrance in rruleset.between(start, end, inc=True):
-                log.debug('  recurrance %s', recurrance)
+            for recurrance in rruleset.between(local_start, local_end, inc=True):
+                log.debug('Including recurrance %s', recurrance)
                 dupe = event.__class__.duplicate(event)
-                dupe.dtstart.value = tz.normalize_to_utc(recurrance)
-                dupe.dtend.value = tz.normalize_to_utc(recurrance + duration)
+                dupe.dtstart.value = recurrance
+                dupe.dtend.value = recurrance + duration
+
+#                 print '\nYIELDING'
+#                 dupe.prettyPrint()
+#                 sys.stdout.flush()
+#                 event.serialize(sys.stdout)
+#                 sys.stdout.flush()
                 yield dupe
                 
         elif event_start >= start and event_end <= end:
+            # Single occurance event.
             yield event
+
+        else:
+            log.debug('skipping')
         
     
 def unique(events):

@@ -5,9 +5,13 @@
 #
 """
 """
+import logging
+
 import ConfigParser
 
 from ical2org import format, tz
+
+log = logging.getLogger(__name__)
 
 class OrgTreeFormatter(format.CalendarFormatter):
     """Formats output as an org outline.
@@ -53,6 +57,12 @@ class OrgTreeFormatter(format.CalendarFormatter):
                                               event_end.strftime('%Y-%m-%d %a %H:%M'))
 
         lines = ['** %s\n   %s' % (event.summary.value, time_range) ]
+
+        if getattr(event, 'uid', None):
+            lines.extend(['   :PROPERTIES:',
+                          '   UID: %s' % event.uid.value,
+                          '   :END:',
+                          ])
 
         if getattr(event, 'location', None):
             lines.append('   - Location: %s' % event.location.value)
