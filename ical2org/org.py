@@ -5,6 +5,8 @@
 #
 """
 """
+
+import datetime
 import logging
 
 import ConfigParser
@@ -47,14 +49,50 @@ class OrgTreeFormatter(format.CalendarFormatter):
         return
 
     def format_event(self, event):
-        event_start = event.dtstart.value.astimezone(tz.local)
-        event_end = event.dtend.value.astimezone(tz.local)
-        if event_start.date() == event_end.date():
-            time_range = '<%s-%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
-                                      event_end.strftime('%H:%M'))
+        # Make sure the event is in our local timezone
+        event_start = event.dtstart.value
+        event_end = event.dtend.value
+        if isinstance(event_start, datetime.datetime):
+            event_start = event.dtstart.value.astimezone(tz.local)
+            event_start_day = event_start.date()
         else:
-            time_range = '<%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
-                                              event_end.strftime('%Y-%m-%d %a %H:%M'))
+            event_start_day = event.dtstart.value
+            
+        if isinstance(event_end, datetime.datetime):
+            event_end = event.dtend.value.astimezone(tz.local)
+            event_end_day = event_end.date()
+        else:
+            event_end_day = event_end
+
+        # Compute the number of days over which the event occurs,
+        # so we can tell if it is a single day or multi-day event.
+        day_span = event_end_day - event_start_day
+        log.debug('event_start %s', event_start)
+        log.debug('event_end %s', event_end)
+        log.debug('day_span %s', day_span)
+
+        if not isinstance(event_start, datetime.datetime):
+            log.debug('all day event')
+            event_end = event_end - datetime.timedelta(1)
+            if day_span <= datetime.timedelta(1):
+                log.debug('single day')
+                # Single day, all-day event
+                time_range = event_start.strftime('<%Y-%m-%d %a>')
+            else:
+                # Multi-day, all-day event
+                time_range = '<%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a'),
+                                             event_end.strftime('%Y-%m-%d %a'))
+        else:
+            log.debug('partial day event')
+            if day_span <= datetime.timedelta(1):
+                log.debug('single day')
+                # Single day, partial day event
+                time_range = '<%s-%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
+                                          event_end.strftime('%H:%M'))
+            else:
+                # Multi-day, event at specific time
+                time_range = '<%s>--<%s>' % (event_start.strftime('%Y-%m-%d %a %H:%M'),
+                                             event_end.strftime('%Y-%m-%d %a %H:%M'))
 
         lines = ['** %s\n   %s' % (event.summary.value, time_range) ]
 

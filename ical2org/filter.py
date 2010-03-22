@@ -30,30 +30,30 @@ def by_date_range(events, start, end):
                   getattr(event, 'uid', 'unknown UID'),
                   )
 
-        # Fix time zones in date objects
+        # Add time zones to date objects so we can do proper date
+        # range comparisons.
         event_start = event.dtstart.value
         event_end = event.dtend.value
+        strip_times = False
         if not isinstance(event_start, datetime.datetime):
             # Convert date to datetime.
+
+            # Remember that we need to strip the times
+            # back out of the event before yielding.
+            strip_times = True
+            
             # Start at beginning of the start day.
-            span = event_end - event_start
             event_start = datetime.datetime.combine(event.dtstart.value,
                                                     datetime.time.min,
                                                     )
-            if not span or (span == datetime.timedelta(1)):
-                # Either the same day or only one day apart.  Since
-                # the DTEND is the non-inclusive end of the event, we
-                # move back to the last time on the previous day if
-                # there's a day or less span.  From
-                # http://www.ietf.org/rfc/rfc2445.txt, section 4.6.1.
-                event_end = datetime.datetime.combine(event.dtstart.value,
-                                                      datetime.time.max,
-                                                      )
-            else:
-                # Multiple days, end at last time of end day
-                event_end = datetime.datetime.combine(event.dtend.value,
-                                                      datetime.time.max,
-                                                      )
+
+            # Because the DTEND is the non-inclusive end of the
+            # event, we use the earliest time on that day when
+            # there's a day or less span.  From
+            # http://www.ietf.org/rfc/rfc2445.txt, section 4.6.1.
+            event_end = datetime.datetime.combine(event.dtend.value,
+                                                  datetime.time.min,
+                                                  )
 
         # Convert all times to UTC for comparison
         event_start = tz.assign_tz(event_start)
@@ -109,10 +109,17 @@ def by_date_range(events, start, end):
 #                 sys.stdout.flush()
 #                 event.serialize(sys.stdout)
 #                 sys.stdout.flush()
+
+                if strip_times:
+                    dupe.dtstart.value = dupe.dtstart.value.date()
+                    dupe.dtend.value = dupe.dtend.value.date()
                 yield dupe
                 
         elif event_start >= start and event_end <= end:
             # Single occurance event.
+            if strip_times:
+                event.dtstart.value = event.dtstart.value.date()
+                event.dtend.value = event.dtend.value.date()
             yield event
 
         else:

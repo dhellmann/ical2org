@@ -57,13 +57,7 @@ def test_one_day():
     event = results[0]
     print 'START:', event.dtstart.value
     print 'END  :', event.dtend.value
-    assert event.dtstart.value == datetime.datetime(2007, 9, 21, 0, 0, tzinfo=local)
-    end_date = event.dtend.value.date()
-    print 'END DATE:', end_date
-    assert end_date == datetime.date(2007, 9, 21)
-    end_time = event.dtend.value.time()
-    print 'END TIME:', end_time
-    assert end_time.hour == 23
-    assert end_time.minute == 59
+    assert event.dtstart.value == datetime.date(2007, 9, 21)
+    assert event.dtend.value == datetime.date(2007, 9, 22)
     return
     

@@ -176,6 +176,11 @@ Command Line Options
 History
 =======
 
+1.2
+
+  - Fix bug with event spans due to mis-interpretation of iCalendar
+    standard.
+
 1.1
 
   - Fix DST handling for recurring events.
