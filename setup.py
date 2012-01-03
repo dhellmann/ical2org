@@ -24,8 +24,8 @@ setup(
     author = 'Doug Hellmann',
     author_email = 'doug.hellmann@gmail.com',
     url = 'http://www.doughellmann.com/projects/ical2org/',
-    download_url = 'http://www.doughellmann.com/downloads/%s-%s.tar.gz' % \
-        (PROJECT, VERSION),
+    #download_url = 'http://www.doughellmann.com/downloads/%s-%s.tar.gz' % \
+    #    (PROJECT, VERSION),
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: BSD License',
