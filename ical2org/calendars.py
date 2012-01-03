@@ -86,6 +86,9 @@ class Calendar(object):
         for ics_filename in ics_filenames:
             with open(ics_filename, 'rt') as ics_file:
                 for component in vobject.readComponents(ics_file):
-                    for event in component.vevent_list:
-                        yield event
+                    try:
+                        for event in component.vevent_list:
+                            yield event
+                    except AttributeError:
+                        continue
         return
